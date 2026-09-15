@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: bot
+    description: Friday bot operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /bot/summary:
+    get:
+      operationId: getBotSummary
+      tags: [bot]
+      summary: Get bot overview
+      responses:
+        "200":
+          description: Bot overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSummary"
+  /bot/analytics:
+    get:
+      operationId: getBotAnalytics
+      tags: [bot]
+      summary: Get request analytics
+      responses:
+        "200":
+          description: Request volume and channel analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotAnalytics"
+  /bot/activity:
+    get:
+      operationId: getBotActivity
+      tags: [bot]
+      summary: Get recent bot activity
+      responses:
+        "200":
+          description: Recent bot activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BotActivity"
+  /bot/status:
+    patch:
+      operationId: updateBotStatus
+      tags: [bot]
+      summary: Update bot operating status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotStatusUpdate"
+      responses:
+        "200":
+          description: Updated status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+  /bot/commands:
+    post:
+      operationId: executeBotCommand
+      tags: [bot]
+      summary: Execute a bot control command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotCommandInput"
+      responses:
+        "200":
+          description: Command result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotCommandResult"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +109,104 @@ components:
           type: string
       required:
         - status
+    BotStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [online, idle, offline]
+        label:
+          type: string
+        updatedAt:
+          type: string
+      required: [status, label, updatedAt]
+    BotStatusUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [online, idle, offline]
+      required: [status]
+    BotSummary:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/BotStatus"
+        totalRequests:
+          type: integer
+        activeSessions:
+          type: integer
+        responseLatency:
+          type: number
+        successRate:
+          type: number
+        deployedAt:
+          type: string
+      required: [status, totalRequests, activeSessions, responseLatency, successRate, deployedAt]
+    BotAnalyticsPoint:
+      type: object
+      properties:
+        label:
+          type: string
+        requests:
+          type: integer
+        successes:
+          type: integer
+      required: [label, requests, successes]
+    BotAnalytics:
+      type: object
+      properties:
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/BotAnalyticsPoint"
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChannelMetric"
+      required: [points, channels]
+    ChannelMetric:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: integer
+        color:
+          type: string
+      required: [name, value, color]
+    BotActivity:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+          enum: [success, pending, error]
+        service:
+          type: string
+      required: [id, timestamp, message, status, service]
+    BotCommandInput:
+      type: object
+      properties:
+        command:
+          type: string
+          enum: [restart, sync_memory, deploy, webhook]
+      required: [command]
+    BotCommandResult:
+      type: object
+      properties:
+        command:
+          type: string
+        accepted:
+          type: boolean
+        message:
+          type: string
+        executedAt:
+          type: string
+      required: [command, accepted, message, executedAt]
 

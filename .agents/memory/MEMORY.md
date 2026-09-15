@@ -1,0 +1,1 @@
+- [Generated client headers compatibility](generated-client-headers.md) — normalize generated Headers with forEach when dom.iterable is absent.

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Friday AI Bot Platform"
+description = "A premium dark AI bot platform with a polished public landing page, live command preview, analytics dashboard, and backend bot controls."
+version = "1.0.0"
+id = "artifacts/friday"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26109
+
+[services.development]
+run = "pnpm --filter @workspace/friday run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/friday", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/friday/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26109"
+BASE_PATH = "/"
